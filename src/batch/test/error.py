@@ -1,0 +1,2 @@
+class BatchTestError(Exception):
+    pass

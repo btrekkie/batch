@@ -1,0 +1,1 @@
+frozendict==0.6
