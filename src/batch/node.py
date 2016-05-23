@@ -3,7 +3,7 @@ from operation import Batcher
 
 class BatchNode(object):
     """A node in the dependency DAG for BatchExecutor.
-    
+
     A node's children indicate on what a node is currently waiting.
     There are four types of nodes: root nodes, generator nodes,
     operation nodes, and batcher nodes.  A root node collects a
@@ -11,19 +11,19 @@ class BatchNode(object):
     result, an operation node collects a BatchableOperation's result,
     and a batcher node collects the results of a batch of
     BatchableOperations having the same Batcher.
-    
+
     BatchNodes have the following attributes:
-    
+
     Root node:
-    
+
     final batcher, final generator, final operation - None
     set<BatchNode> children - The children: the generator and operation
         nodes for the results of the BatchExecutor.
     list results - The list in which we store the results of the
         BatchExecutor.
-    
+
     Generator node:
-    
+
     final batcher, final operation - None
     set<BatchNode> children - The children: the generator and operation
         nodes on which the node is waiting, from the value that
@@ -50,9 +50,9 @@ class BatchNode(object):
         The results for a generator or BatchableOperation that raised an
         exception are None.  The list is parallel to the values that
         self.generator most recently yielded.
-    
+
     Operation node:
-    
+
     final generator - None
     final Batcher batcher - self.operation.batcher()
     set<BatchNode> children - The batcher node for the result of the
@@ -63,9 +63,9 @@ class BatchNode(object):
         collect the result of self.operation.
     final int result_index - The index in self.parent.results in which
         to store the result of self.operation.
-    
+
     Batcher node:
-    
+
     final generator, final operation - None
     final Batcher batcher - The batcher.
     set<BatchNode> children - The children: the generator node that the
@@ -83,19 +83,19 @@ class BatchNode(object):
         Y, and the node for Y does not appear in
         parent_to_operation_index.
     """
-    
+
     def __init__(self, generator, operation, batcher):
         """Private constructor."""
         self.generator = generator
         self.operation = operation
         self.batcher = batcher
         self.children = set()
-    
+
     @staticmethod
     def create_root_node():
         """Return a new root BatchNode."""
         return BatchNode(None, None, None)
-    
+
     @staticmethod
     def create_generator_node(generator):
         """Return a new generator BatchNode for the specified Generator."""
@@ -104,11 +104,11 @@ class BatchNode(object):
         node.exception_info = None
         node.parent_to_result_index = {}
         return node
-    
+
     @staticmethod
     def create_operation_node(operation, parent, result_index):
         """Return a new operation BatchNode.
-        
+
         Assign the arguments to the attributes of the same names.  Add
         the node to the parent.children.
         """
@@ -123,11 +123,11 @@ class BatchNode(object):
         parent.children.add(node)
         node.result_index = result_index
         return node
-    
+
     @staticmethod
     def create_batcher_node(batcher, operation_nodes):
         """Return a new batcher BatchNode.
-        
+
         Batcher batcher - The batcher.
         object operation_nodes - A list or tuple of operation BatchNodes
             whose results the batcher node will compute.  We add the
@@ -140,19 +140,19 @@ class BatchNode(object):
             operation_node.children.add(node)
         node.operation_count = len(operation_nodes)
         return node
-    
+
     def is_root_node(self):
         return self.generator is None and self.batcher is None
-    
+
     def is_generator_node(self):
         return self.generator is not None
-    
+
     def is_operation_node(self):
         return self.operation is not None
-    
+
     def is_batcher_node(self):
         return self.batcher is not None and self.operation is None
-    
+
     def iter_parents(self):
         """Return an iterator over the node's parent BatchNodes."""
         if self.is_root_node():

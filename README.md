@@ -30,7 +30,7 @@ batch generator or `BatchableOperation` passed to it.
 
 Consider the following example:
 
-<pre>
+<pre lang="python">
 def gen_user(user_id):
     """Return the User with the specified ID."""
 
@@ -70,7 +70,7 @@ def gen_spouses(user_id)
     # Fetch the user with ID user_id, and in parallel, fetch his spouse.  Store
     # the user in "user" and the spouse in "spouse".
     user, spouse = yield (gen_user(user_id), gen_spouse(user_id))
-    
+
     # Yield (user, spouse) as the result of gen_spouses
     yield GenResult((user, spouse))
 

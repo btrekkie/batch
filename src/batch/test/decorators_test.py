@@ -8,7 +8,7 @@ from error import BatchTestError
 class GenDecoratorsTest(unittest.TestCase):
     def test_cached_fibonacci(self):
         """Test various cached implementations of computing Fibonacci numbers.
-        
+
         Test various generator-based implementations of computing
         Fibonacci numbers, which have somewhat complex generator trees,
         with methods that use the cached_generator decorator.
@@ -36,7 +36,7 @@ class GenDecoratorsTest(unittest.TestCase):
             BatchExecutor.execute(obj.gen_fibonacci_without_operations(14)))
         self.assertEqual(
             obj.fibonacci_call_counts, dict.fromkeys(xrange(0, 15), 1))
-        
+
         obj = GenDecoratorsTestObject()
         BatchExecutor.execute(obj.gen_fibonacci_with_leaf_operations(4))
         self.assertEqual(
@@ -61,7 +61,7 @@ class GenDecoratorsTest(unittest.TestCase):
             BatchExecutor.execute(obj.gen_fibonacci_with_leaf_operations(14)))
         self.assertEqual(
             obj.fibonacci_call_counts, dict.fromkeys(xrange(0, 15), 1))
-        
+
         obj = GenDecoratorsTestObject()
         BatchExecutor.execute(
             obj.gen_fibonacci_with_intermediate_operations(4))
@@ -90,7 +90,7 @@ class GenDecoratorsTest(unittest.TestCase):
                 obj.gen_fibonacci_with_intermediate_operations(14)))
         self.assertEqual(
             obj.fibonacci_call_counts, dict.fromkeys(xrange(0, 15), 1))
-        
+
         obj = GenDecoratorsTestObject()
         BatchExecutor.execute(
             obj.gen_fibonacci_with_intermediate_operations(4))
@@ -111,10 +111,10 @@ class GenDecoratorsTest(unittest.TestCase):
             obj.fibonacci_obj_args)
         self.assertEqual(
             obj.fibonacci_call_counts, dict.fromkeys(xrange(0, 15), 1))
-    
+
     def test_cached_generator(self):
         """Test the cached_generator decorator.
-        
+
         In particular, test that the function it wraps is not called
         more times than permitted with a given set of arguments.
         """
@@ -127,7 +127,7 @@ class GenDecoratorsTest(unittest.TestCase):
         self.assertEqual([(1, 2, 3, 4)], obj.cached_generator_args)
         self.assertEqual(
             15, BatchExecutor.execute(obj.gen_cached_generator(1, 2, bar=4)))
-        
+
         obj = GenDecoratorsTestObject()
         self.assertEqual(
             32, BatchExecutor.execute(obj.gen_cached_generator(5, 6, bar=7)))
@@ -141,10 +141,10 @@ class GenDecoratorsTest(unittest.TestCase):
         self.assertEqual(
             127, BatchExecutor.execute(obj.gen_cached_generator(8, 9, 10, 11)))
         self.assertEqual([(8, 9, 10, 11)], obj.cached_generator_args)
-    
+
     def test_cached_raise(self):
         """Test that the cached_generator decorator works with exceptions.
-        
+
         In particular, test the case in which the wrapped function does
         not yield values, but rather either returns a generator or
         raises an exception.
@@ -163,7 +163,7 @@ class GenDecoratorsTest(unittest.TestCase):
             obj.gen_cached_identity(-5)
         self.assertEqual(
             {-5: 1, -1: 1, 6: 1, 42: 1}, obj.cached_identity_call_counts)
-        
+
         with self.assertRaises(BatchTestError):
             BatchExecutor.execute(obj.gen_cached_identity_with_yield(-1))
         obj.gen_cached_identity_with_yield(-1)
@@ -186,7 +186,7 @@ class GenDecoratorsTest(unittest.TestCase):
         self.assertEqual(
             {-5: 1, -1: 1, 6: 1, 42: 1},
             obj.cached_identity_with_yield_call_counts)
-    
+
     def test_generator_cache(self):
         """Test using cached_generator with GeneratorCache."""
         obj = GenDecoratorsTestObject()
@@ -206,7 +206,7 @@ class GenDecoratorsTest(unittest.TestCase):
         self.assertEqual({1: 1, 5: 1}, obj.identity_with_cache1_call_counts)
         self.assertEqual({(3, 4): 1}, obj.sum_with_cache1_call_counts)
         self.assertEqual({5: 1}, obj.identity_with_cache2_call_counts)
-        
+
         GenDecoratorsTestObject.CACHE1.clear()
         self.assertEqual(
             7, BatchExecutor.execute(obj.gen_sum_with_cache1(3, 4)))

@@ -10,7 +10,7 @@ class GenUtilsTest(unittest.TestCase):
     def _gen_identity(self, value):
         result = yield TestIdentityOperation(value)
         yield GenResult(result)
-    
+
     def test_gen_structured(self):
         """Test GenUtils.gen_structured."""
         self.assertEqual(
@@ -63,7 +63,7 @@ class GenUtilsTest(unittest.TestCase):
                     },
                     {},
                 ])))
-    
+
     def test_gen_identity(self):
         """Test GenUtils.gen_identity."""
         self.assertEqual(

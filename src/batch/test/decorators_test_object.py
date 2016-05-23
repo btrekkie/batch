@@ -7,9 +7,9 @@ from identity_operation import TestIdentityOperation
 
 class GenDecoratorsTestObject(object):
     """Provides methods decorated with cached_generator for GenDecoratorsTest.
-    
+
     Public attributes:
-    
+
     list<tuple<int, int, int, int>> cached_generator_args - A list of
         the tuples indicating the arguments, in order of declaration,
         passed to successive calls to gen_cached_identity, in order.
@@ -37,13 +37,13 @@ class GenDecoratorsTestObject(object):
         gen_sum_with_cache1 to the number of times we called the method
         with the arguments.
     """
-    
+
     # The GeneratorCache for gen_identity_with_cache1 and gen_sum_with_cache1
     CACHE1 = GeneratorCache()
-    
+
     # The GeneratorCache for gen_identity_with_cache2
     CACHE2 = GeneratorCache()
-    
+
     def __init__(self):
         self.fibonacci_call_counts = {}
         self.fibonacci_obj_args = []
@@ -53,7 +53,7 @@ class GenDecoratorsTestObject(object):
         self.identity_with_cache1_call_counts = {}
         self.sum_with_cache1_call_counts = {}
         self.identity_with_cache2_call_counts = {}
-    
+
     @cached_generator
     def gen_fibonacci_without_operations(self, i):
         self.fibonacci_call_counts[i] = (
@@ -65,7 +65,7 @@ class GenDecoratorsTestObject(object):
                 self.gen_fibonacci_without_operations(i - 1),
                 self.gen_fibonacci_without_operations(i - 2))
             yield GenResult(value1 + value2)
-    
+
     @cached_generator
     def gen_fibonacci_with_leaf_operations(self, i):
         self.fibonacci_call_counts[i] = (
@@ -78,7 +78,7 @@ class GenDecoratorsTestObject(object):
                 self.gen_fibonacci_with_leaf_operations(i - 1),
                 self.gen_fibonacci_with_leaf_operations(i - 2))
             yield GenResult(value1 + value2)
-    
+
     @cached_generator
     def gen_fibonacci_with_intermediate_operations(self, i):
         self.fibonacci_call_counts[i] = (
@@ -93,7 +93,7 @@ class GenDecoratorsTestObject(object):
                 self.gen_fibonacci_with_intermediate_operations(addend1),
                 self.gen_fibonacci_with_intermediate_operations(addend2))
             yield GenResult(value1 + value2)
-    
+
     @cached_generator
     def gen_fibonacci_from_obj(self, obj):
         self.fibonacci_obj_args.append(obj)
@@ -103,7 +103,7 @@ class GenDecoratorsTestObject(object):
             self.gen_fibonacci_with_intermediate_operations(value),
             self.gen_fibonacci_with_intermediate_operations(obj[1]['foo']))
         yield GenResult(values)
-    
+
     @cached_generator
     def gen_cached_generator(self, arg1, arg2, foo=3, bar=4):
         self.cached_generator_args.append((arg1, arg2, foo, bar))
@@ -112,11 +112,11 @@ class GenDecoratorsTestObject(object):
             TestIdentityOperation(bar))
         value4 = yield TestIdentityOperation(value2 * value3)
         yield GenResult(value1 + value4)
-    
+
     def _gen_identity(self, value):
         result = yield TestIdentityOperation(value)
         yield GenResult(result)
-    
+
     @cached_generator
     def gen_cached_identity(self, value):
         self.cached_identity_call_counts[value] = (
@@ -125,7 +125,7 @@ class GenDecoratorsTestObject(object):
             raise BatchTestError()
         else:
             return self._gen_identity(value)
-    
+
     @cached_generator
     def gen_cached_identity_with_yield(self, value):
         self.cached_identity_with_yield_call_counts[value] = (
@@ -135,14 +135,14 @@ class GenDecoratorsTestObject(object):
         else:
             result = yield TestIdentityOperation(value)
             yield GenResult(result)
-    
+
     @cached_generator(CACHE1)
     def gen_identity_with_cache1(self, value):
         self.identity_with_cache1_call_counts[value] = (
             self.identity_with_cache1_call_counts.get(value, 0) + 1)
         result = yield TestIdentityOperation(value)
         yield GenResult(result)
-    
+
     @cached_generator(CACHE1)
     def gen_sum_with_cache1(self, value1, value2):
         self.sum_with_cache1_call_counts[(value1, value2)] = (
@@ -150,7 +150,7 @@ class GenDecoratorsTestObject(object):
         result1, result2 = yield (
             TestIdentityOperation(value1), TestIdentityOperation(value2))
         yield GenResult(result1 + result2)
-    
+
     @cached_generator(CACHE2)
     def gen_identity_with_cache2(self, value):
         self.identity_with_cache2_call_counts[value] = (

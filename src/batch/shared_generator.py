@@ -5,36 +5,36 @@ from gen_result import GenResult
 
 class SharedGenerator(object):
     """Provides the ability to safely yield a Generator from multiple places.
-    
+
     SharedGenerator hides the difficulties associated with yielding a
     single batchable generator from multiple function calls.  Sample
     usage is as follows:
-    
+
     class Foo(object):
         def __init__(self):
             self._bar_generator = None
-        
+
         def _gen_bar(self):
             bar = yield BarOperation()
             yield GenResult(bar)
-        
+
         def gen_bar(self):
             if self._bar_generator is None:
                 self._bar_generator = SharedGenerator(self._gen_bar())
             return self._bar_generator.gen()
-    
+
     In the above example, say that a call to BatchExecutor.execute
     resulted in multiple parallel calls to gen_bar.  Those calls would
     be able to share generators, so we are guaranteed to only create one
     BarOperation and to execute it only once.
-    
+
     The main purpose of sharing a generator is to improve performance.
     We may also use sharing to prevent a function with side effects from
     being called multiple times.
-    
+
     SharedGenerator hides two difficulties associated with sharing
     generators:
-    
+
     - We may not execute a shared generator from multiple calls to
       BatchExecutor.execute* at the same time.  This is because both
       such calls will attempt to iterate over the same generator, and
@@ -43,11 +43,11 @@ class SharedGenerator(object):
     - We may not yield a generator that has finished executing.  To
       prevent this, a SharedGenerator caches and returns the result (or
       exception) of its generator when it is finished executing.
-    
+
     Note that despite the name, SharedGenerator is not a Generator.
     Rather, it wraps a Generator.
     """
-    
+
     # Private attributes:
     # tuple<type, mixed, traceback> _exception_info - Information about
     #     the exception the generator raised, as returned by
@@ -57,13 +57,13 @@ class SharedGenerator(object):
     #     generator is not finished executing or raised an exception.
     # Generator _shared_generator - The shared Generator object to
     #     yield, or None if it is finished executing.
-    
+
     def __init__(self, generator):
         """Initialize a SharedGenerator that wraps the specified Generator."""
         self._shared_generator = self._gen_wrap(generator)
         self._result = None
         self._exception_info = None
-    
+
     def gen(self):
         """Return the result of the generator passed to the constructor."""
         if self._result is not None:
@@ -73,10 +73,10 @@ class SharedGenerator(object):
         else:
             result = yield self._shared_generator
             yield GenResult(result)
-    
+
     def _gen_wrap(self, generator):
         """Wrap the specified Generator.
-        
+
         Specifically, this function is a generator that behaves like
         "generator", except that (a) it raises an exception if it is
         started multiple times and (b) it stores the result in _result.

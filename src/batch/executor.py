@@ -8,10 +8,10 @@ from operation import BatchableOperation
 
 class BatchExecutor(object):
     """Provides the ability to performed batch execution.
-    
+
     See the comments for "execute".
     """
-    
+
     # Private attributes:
     # dict<Generator, BatchNode> _generator_nodes - A map to the
     #     generator nodes in the graph from their generators.
@@ -21,15 +21,15 @@ class BatchExecutor(object):
     #     the batchers of the operation nodes in the graph that have no
     #     children to the operation nodes.
     # BatchNode _root_node - The graph's root node.
-    
+
     def _generator_node(self, generator, parent, result_index):
         """Return a BatchNode for the specified Generator.
-        
+
         Reuse the generator's existing node if it is present, and create
         a new node if not.  Add a mapping from "parent" to result_index
         in the node's parent_to_result_index field, and add the node to
         parent.children.
-        
+
         Generator generator - The generator.
         BatchNode parent - The parent node.
         int result_index - The result index.
@@ -43,14 +43,14 @@ class BatchExecutor(object):
         generator_node.parent_to_result_index[parent] = result_index
         parent.children.add(generator_node)
         return generator_node
-    
+
     def _generator_or_operation_node(
             self, generator_or_operation, parent, result_index):
         """Return a node for the specified Generator or BatchableOperation.
-        
+
         If generator_or_operation is a Generator, reuse the generator's
         existing node if it is present, and create a new node if not.
-        
+
         mixed generator_or_operation - The Generator or
             BatchableOperation.  If this is not a Generator or
             BatchableOperation, the method returns None.
@@ -72,10 +72,10 @@ class BatchExecutor(object):
             return operation_node
         else:
             return None
-    
+
     def __init__(self, generators_and_operations):
         """Initialize a BatchGenerator.
-        
+
         Initialize a BatchGenerator for computing
         executev(generators_and_operations).  The _run()
         method will perform the computation.
@@ -85,7 +85,7 @@ class BatchExecutor(object):
         self._generator_nodes = {}
         self._root_node = BatchNode.create_root_node()
         self._root_node.results = [None] * len(generators_and_operations)
-        
+
         # Add the root node's children
         for (index, generator_or_operation) in (
                 enumerate(generators_and_operations)):
@@ -95,13 +95,13 @@ class BatchExecutor(object):
                 raise TypeError(
                     'execute_batches and the like accept only generators and '
                     'BatchableOperations as arguments')
-    
+
     def _transmit_result(self, generator_node, parent, result, result_index):
         """Send the result of a generator node in a parent node.
-        
+
         Send the result "result" of the generator node generator_node to
         the parent node "parent".
-        
+
         BatchNode generator_node - The generator node.
         BatchNode parent - The parent node.
         mixed result - The result value.
@@ -116,7 +116,7 @@ class BatchExecutor(object):
                 self._leaf_generator_nodes.add(parent)
         else:
             batcher_node = parent
-            
+
             # Verify the return value
             if not isinstance(result, (list, tuple)):
                 raise TypeError(
@@ -129,7 +129,7 @@ class BatchExecutor(object):
                     'The result of {:s}.gen_batch did not have the same '
                     'length as the argument to gen_batch'.format(
                         batcher_node.batcher.__class__.__name__))
-            
+
             # Transmit the batch's results to the operation nodes
             for (operation_node, index) in (
                     batcher_node.parent_to_operation_index.iteritems()):
@@ -139,10 +139,10 @@ class BatchExecutor(object):
                 if (not operation_node.parent.children and
                         not operation_node.parent.is_root_node()):
                     self._leaf_generator_nodes.add(operation_node.parent)
-    
+
     def _transmit_exception(self, generator_node, parent, exception_info):
         """Propagate an exception from generator_node to its parent "parent".
-        
+
         BatchNode generator_node - The generator node from which to
             propagate the exception.  If the exception did not occur in
             a generator node, this is None.
@@ -168,10 +168,10 @@ class BatchExecutor(object):
                 grandparent.children.remove(operation_node)
                 if not grandparent.children:
                     self._leaf_generator_nodes.add(grandparent)
-    
+
     def _iterate_generator_node(self, node):
         """Perform one iteration on the specified generator node's Generator.
-        
+
         BatchNode node - The generator node.
         """
         try:
@@ -200,7 +200,7 @@ class BatchExecutor(object):
                 if parent in node.parent_to_result_index:
                     self._transmit_exception(node, parent, exception_info)
             return
-        
+
         if isinstance(yield_value, GenResult):
             # Transmit the result and destroy the generator node
             for (parent, result_index) in (
@@ -233,13 +233,13 @@ class BatchExecutor(object):
             node.results = [None] * len(yield_value)
             if not yield_value:
                 self._leaf_generator_nodes.add(node)
-    
+
     def _execute_batch(self, batcher, operation_nodes):
         """Start computing the results of a batch of operations.
-        
+
         Add a node to compute the results of a batch of operations for
         the specified operation nodes.
-        
+
         Batcher batcher - The batcher for computing the batch's results.
         object operation_nodes - A list or tuple of operation
             BatchNodes.
@@ -258,10 +258,10 @@ class BatchExecutor(object):
             generator_node = self._generator_node(
                 generator, batcher_node, None)
             self._leaf_generator_nodes.add(generator_node)
-    
+
     def _run(self):
         """Compute the executor's results.
-        
+
         Compute the results of the generators and BatchableOperations
         passed to the constructor.  This method may only be called once
         per instance.
@@ -277,11 +277,11 @@ class BatchExecutor(object):
                 'The generators form a cycle, i.e. there is a generator that '
                 'is waiting on its own results')
         return self._root_node.results
-    
+
     @staticmethod
     def execute(generator_or_operation):
         """Execute batches from a generator or BatchableOperation.
-        
+
         This coroutine assists in batching BatchableOperations in the
         presence of potentially complex dependency relationships, which
         we express using generators.  Batching occurs on a single
@@ -291,7 +291,7 @@ class BatchExecutor(object):
         results of the operations appearing as the return values of the
         yield statements.  Once finished, a batch generator yields a
         GenResult object indicating the generator's result.
-        
+
         To be precise, a "batch generator" is a generator that yields
         batch generators, BatchableOperations, lists or tuples of such
         values, and / or GenResult objects.  When run using execute*,
@@ -307,42 +307,42 @@ class BatchExecutor(object):
         designated the result of the generator.)  "execute" returns the
         result of the batch generator or BatchableOperation passed to
         it.
-        
+
         Consider the following example:
-        
-        
+
+
         # Return the User with the specified ID.
         def gen_user(user_id):
             # Compute the key associated with the user in data store,
             # which is a simple key-value hash
             data_store_key = 'user:{:d}'.format(user_id)
-            
+
             # Run a DataStoreOperation to fetch the dictionary
             # associated with data_store_key.  Store the result in
             # user_data.
             user_data = yield DataStoreOperation(data_store_key)
-            
+
             # Wrap the dictionary in a User object, and yield it as the
             # result of gen_user
             yield GenResult(User(user_data))
-        
+
         # Return the User object for the spouse of the user with the
         # specified ID.
         def gen_spouse(user_id):
             # Compute the key for fetching the user's spouse's ID
             data_store_key = 'spouseId:{:d}'.format(user_id)
-            
+
             # Run a DataStoreOperation to fetch the integer associated
             # with data_store_key.  Store the result in spouse_id.
             spouse_id = yield DataStoreOperation(data_store_key)
-            
+
             # Fetch the user with ID spouse_id, and store the result in
             # "spouse"
             spouse = yield gen_user(spouse_id)
-            
+
             # Yield the spouse as the result of gen_spouse
             yield GenResult(spouse)
-        
+
         # Return a tuple containing the User with the specified ID and
         # his spouse.
         def gen_spouses(user_id)
@@ -350,20 +350,20 @@ class BatchExecutor(object):
             # spouse.  Store the user in "user" and the spouse in
             # "spouse".
             user, spouse = yield (gen_user(user_id), gen_spouse(user_id))
-            
+
             # Yield (user, spouse) as the result of gen_spouses
             yield GenResult((user, spouse))
-        
+
         BatchExecutor.execute(gen_spouses(12345))
-        
-        
+
+
         To summarize, the gen_spouses function fetches the user with
         gen_user and the spouse with gen_spouse in parallel.  The
         gen_spouse function fetches the spouse ID with
         DataStoreOperation, then fetches the spouse with gen_user.
         gen_user fetches the user dictionary with DataStoreOperation,
         then wraps it in a User object.
-        
+
         By representing these dependencies as batch generators, we are
         able to effectively batch the data fetching operations.
         Specifically, we will only make two round-trip requests to the
@@ -372,13 +372,13 @@ class BatchExecutor(object):
         dictionary for his spouse.  By contrast, a naive approach would
         have required three round trips - one for each of the three data
         store keys.
-        
+
         For performance reasons, we should call execute* methods at the
         highest level possible.  In particular, calling "execute" within
         a batch generator is harmful to performance, because it
         eliminates opportunities for batching.  Batch generators should
         use yielding instead of calling "execute".
-        
+
         If a batch generator yields another generator or a
         BatchableOperation, and the yielded generator or the yielded
         operation's batcher() method raises an exception, "execute" will
@@ -389,12 +389,12 @@ class BatchExecutor(object):
         exception, we finish any generators or BatchableOperations that
         were running in parallel with the one that raised the exception
         before propagating it.
-        
+
         Multiple batch generators may yield the same Generator object,
         so as to share the result of the generator.  However, we should
         only do so using the SharedGenerator class.  See that class's
         comments.
-        
+
         By convention, batch generator functions begin with the prefix
         "gen".  For clarity of exposition, documentation may refer to a
         batch generator's result as the function's "return value", even
@@ -404,36 +404,36 @@ class BatchExecutor(object):
         generator functions, although this is technically incorrect.
         Two batchable generators are said to be running "in parallel" if
         the generators are both partway through execution.
-        
+
         object generator_or_operation - The batch generator or
             BatchableOperation.
         return mixed - The result of generator_or_operation.
         """
         return BatchExecutor([generator_or_operation])._run()[0]
-    
+
     @staticmethod
     def executev(generators_and_operations):
         """Execute batches from generators and / or BatchableOperations.
-        
+
         Compute the results of the specified list or tuple of generators
         and / or BatchOperations.  This is a variant of "execute".  See
         that method's comments.
-        
+
         list|tuple generators_and_operations - A list or tuple of the
             generators and / or BatchOperations.
         return list - A list of the results of the generators and / or
             BatchableOperations.  The list is parallel to the argument.
         """
         return BatchExecutor(generators_and_operations)._run()
-    
+
     @staticmethod
     def executeva(*args):
         """Execute batches from generators and / or BatchableOperations.
-        
+
         Compute the results of the specified generators and / or
         BatchOperations.  This is a variant of "execute".  See that
         method's comments.
-        
+
         tuple args - The generators and / or BatchOperations.
         return list - A list of the results of the generators and / or
             BatchableOperations.  The list is parallel to "args".

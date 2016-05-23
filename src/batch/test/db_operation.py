@@ -5,21 +5,21 @@ from batch import GenResult
 
 class TestDbOperation(BatchableOperation):
     """Operation for a database query.
-    
+
     Database queries take two forms, represented using lists or tuples:
-    
+
     ['value', basestring object_type, int object_id] - A query for the
         object with the specified type and id.
     ['count', basestring object_type] - A query for the number of
         objects of the specified type.
     """
-    
+
     # Private attributes:
     # list|tuple _query - The query to execute.
-    
+
     def __init__(self, query):
         self._query = query
-    
+
     def batcher(self):
         return TestDbBatcher.instance()
 
@@ -40,18 +40,18 @@ class TestDbBatcher(Batcher):
             42: {'favoriteFood': 'pizza'},
         },
     }
-    
+
     # The singleton instance of TestDbBatcher, or None if we have not created
     # it yet.
     _instance = None
-    
+
     @staticmethod
     def instance():
         """Return the singleton instance of TestDbBatcher."""
         if TestDbBatcher._instance is None:
             TestDbBatcher._instance = TestDbBatcher()
         return TestDbBatcher._instance
-    
+
     def gen_batch(self, operations):
         results = []
         for operation in operations:

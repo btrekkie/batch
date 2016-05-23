@@ -5,13 +5,13 @@ from batch import GenResult
 
 class TestHashOperation(BatchableOperation):
     """An operation that simulates fetching from a key-value data store."""
-    
+
     # Private attributes:
     # basestring _key - The key to fetch.
-    
+
     def __init__(self, key):
         self._key = key
-    
+
     def batcher(self):
         return TestHashBatcher.instance()
 
@@ -32,18 +32,18 @@ class TestHashBatcher(Batcher):
         'user:13': {'favoriteFood': 'burger'},
         'user:42': {'favoriteFood': 'pizza'},
     }
-    
+
     # The singleton instance of TestHashBatcher, or None if we have not created
     # it yet.
     _instance = None
-    
+
     @staticmethod
     def instance():
         """Return the singleton instance of TestHashBatcher."""
         if TestHashBatcher._instance is None:
             TestHashBatcher._instance = TestHashBatcher()
         return TestHashBatcher._instance
-    
+
     def gen_batch(self, operations):
         yield GenResult(
             list([
